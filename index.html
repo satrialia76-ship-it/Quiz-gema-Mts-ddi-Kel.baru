@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kuis Teknologi & AI</title>
+  <style>
+    :root {
+      --primary-color: #4f46e5;
+      --primary-hover: #4338ca;
+      --bg-color: #f3f4f6;
+      --card-bg: #ffffff;
+      --text-color: #1f2937;
+      --correct-color: #10b981;
+      --incorrect-color: #ef4444;
+      --border-color: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .quiz-container {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 600px;
+      padding: 30px;
+      overflow: hidden;
+    }
+
+    .header {
+      margin-bottom: 20px;
+    }
+
+    .title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+
+    .progress-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.9rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background-color: var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: var(--primary-color);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .question-text {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 20px 0;
+      line-height: 1.5;
+    }
+
+    .options-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      background-color: #fff;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 1rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+    }
+
+    .option-btn:hover:not([disabled]) {
+      border-color: var(--primary-color);
+      background-color: #f0fdf4;
+    }
+
+    .option-btn.correct {
+      background-color: #d1fae5;
+      border-color: var(--correct-color);
+      color: #065f46;
+      font-weight: 600;
+    }
+
+    .option-btn.incorrect {
+      background-color: #fee2e2;
+      border-color: var(--incorrect-color);
+      color: #991b1b;
+    }
+
+    .footer {
+      margin-top: 25px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .next-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .next-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .next-btn:disabled {
+      background-color: #9ca3af;
+      cursor: not-allowed;
+    }
+
+    /* Result Screen Styling */
+    .result-container {
+      text-align: center;
+      display: none;
+    }
+
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background-color: var(--bg-color);
+      border: 6px solid var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px auto;
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+
+    .restart-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 6px;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    .restart-btn:hover {
+      background-color: var(--primary-hover);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="quiz-container">
+    <!-- Quiz Interface -->
+    <div id="quiz-screen">
+      <div class="header">
+        <h1 class="title">Kuis Teknologi & AI</h1>
+        <div class="progress-container">
+          <span id="question-count">Soal 1 dari 15</span>
+          <span id="score-live">Skor: 0</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="question-text" id="question-text">
+        Loading pertanyaan...
+      </div>
+
+      <div class="options-container" id="options-container">
+        <!-- Pilihan jawaban disisipkan melalui JS -->
+      </div>
+
+      <div class="footer">
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()" disabled>Selanjutnya</button>
+      </div>
+    </div>
+
+    <!-- Result Interface -->
+    <div id="result-screen" class="result-container">
+      <h2 style="font-size: 1.8rem; margin-bottom: 10px;">Kuis Selesai!</h2>
+      <p style="color: #6b7280;">Berikut adalah hasil skor akhir Anda:</p>
+      
+      <div class="score-circle" id="final-score">0/15</div>
+      
+      <p id="feedback-text" style="font-size: 1.1rem; font-weight: 600;"></p>
+      
+      <button class="restart-btn" onclick="restartQuiz()">Ulangi Kuis</button>
+    </div>
+  </div>
+
+  <script>
+    const quizData = [
+      {
+        question: "1. Istilah \"AI\" pertama kali dicetuskan pada Konferensi Dartmouth tahun 1956 oleh...",
+        options: ["A. Alan Turing", "B. John McCarthy", "C. Elon Musk", "D. Ada Lovelace"],
+        answer: 1 // B
+      },
+      {
+        question: "2. Jenis AI yang dirancang khusus untuk menyelesaikan satu tugas spesifik saja dinamakan...",
+        options: ["A. Artificial General Intelligence (AGI)", "B. Artificial Superintelligence (ASI)", "C. Narrow AI / Weak AI", "D. Quantum AI"],
+        answer: 2 // C
+      },
+      {
+        question: "3. Cabang AI yang memungkinkan komputer belajar dari pola data tanpa diprogram secara eksplisit adalah...",
+        options: ["A. Machine Learning", "B. Cloud Computing", "C. Cybersecurity", "D. Blockchain"],
+        answer: 0 // A
+      },
+      {
+        question: "4. Model AI yang mampu membuat konten baru seperti teks, gambar, atau musik disebut...",
+        options: ["A. Predictive AI", "B. Generative AI", "C. Reactive AI", "D. Symbolic AI"],
+        answer: 1 // B
+      },
+      {
+        question: "5. Arsitektur jaringan saraf buatan yang menjadi fondasi utama Large Language Models (LLM) seperti ChatGPT adalah...",
+        options: ["A. Convolutional Neural Network", "B. Transformer", "C. Decision Tree", "D. Recurrent Neural Network"],
+        answer: 1 // B
+      },
+      {
+        question: "6. Teknologi penyimpanan data terdesentralisasi yang menjadi dasar mata uang kripto dinamakan...",
+        options: ["A. Internet of Things", "B. Edge Computing", "C. Blockchain", "D. Big Data"],
+        answer: 2 // C
+      },
+      {
+        question: "7. Pengujian untuk mengukur apakah kecerdasan mesin setara dengan cara berpikir manusia dinamakan...",
+        options: ["A. Stress Test", "B. Turing Test", "C. CAPTCHA Test", "D. Beta Test"],
+        answer: 1 // B
+      },
+      {
+        question: "8. Jaringan perangkat fisik yang terhubung ke internet untuk saling berbagi data dinamakan...",
+        options: ["A. Virtual Reality", "B. Augmented Reality", "C. Internet of Things (IoT)", "D. Machine Vision"],
+        answer: 2 // C
+      },
+      {
+        question: "9. Teknologi yang menggabungkan elemen digital ke dalam dunia nyata secara real-time adalah...",
+        options: ["A. Mixed Intelligence", "B. Augmented Reality (AR)", "C. Virtual Reality (VR)", "D. Deepfake"],
+        answer: 1 // B
+      },
+      {
+        question: "10. Manipulasi media (foto/video) dengan rekayasa AI hingga menghasilkan wajah/suara yang sangat mirip aslinya disebut...",
+        options: ["A. Deepfake", "B. Phishing", "C. Malware", "D. Spooling"],
+        answer: 0 // A
+      },
+      {
+        question: "11. Apa peran utama Graphics Processing Unit (GPU) dalam komputasi AI modern?",
+        options: ["A. Menyimpan berkas data jangka panjang", "B. Memproteksi perangkat dari serangan siber", "C. Memproses perhitungan paralel secara masif dan cepat", "D. Menghubungkan komputer ke jaringan internet"],
+        answer: 2 // C
+      },
+      {
+        question: "12. Metode belajar AI yang mengandalkan sistem umpan balik berupa hadiah (reward) dan hukuman (punishment) dinamakan...",
+        options: ["A. Supervised Learning", "B. Unsupervised Learning", "C. Reinforcement Learning", "D. Transfer Learning"],
+        answer: 2 // C
+      },
+      {
+        question: "13. Model AI yang mampu menerima dan memproses berbagai jenis input sekaligus (teks, gambar, audio) disebut...",
+        options: ["A. Unimodal AI", "B. Multimodal AI", "C. Dual-core AI", "D. Cross-platform AI"],
+        answer: 1 // B
+      },
+      {
+        question: "14. Bias atau kecenderungan keputusan yang tidak adil pada AI umumnya disebabkan oleh...",
+        options: ["A. Kecepatan internet yang lambat", "B. Data pelatihan yang tidak seimbang atau berprasangka", "C. Kerusakan fisik pada hardware", "D. Penggunaan GPU yang berlebihan"],
+        answer: 1 // B
+      },
+      {
+        question: "15. Fenomena saat model bahasa besar (LLM) memberikan jawaban yang karangan/salah tetapi disampaikan secara sangat yakin dinamakan...",
+        options: ["A. Overfitting", "B. Hallucination (Halusinasi)", "C. Underfitting", "D. Latency"],
+        answer: 1 // B
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+
+    const questionTextEl = document.getElementById("question-text");
+    const optionsContainerEl = document.getElementById("options-container");
+    const questionCountEl = document.getElementById("question-count");
+    const scoreLiveEl = document.getElementById("score-live");
+    const progressFillEl = document.getElementById("progress-fill");
+    const nextBtnEl = document.getElementById("next-btn");
+
+    function loadQuestion() {
+      // Reset state
+      nextBtnEl.disabled = true;
+      optionsContainerEl.innerHTML = "";
+
+      const currentQuiz = quizData[currentQuestionIndex];
+
+      // Update Header & Progress Bar
+      questionCountEl.innerText = `Soal ${currentQuestionIndex + 1} dari ${quizData.length}`;
+      scoreLiveEl.innerText = `Skor: ${score}`;
+      const progressPercent = ((currentQuestionIndex) / quizData.length) * 100;
+      progressFillEl.style.width = `${progressPercent}%`;
+
+      // Set Teks Pertanyaan
+      questionTextEl.innerText = currentQuiz.question;
+
+      // Render Pilihan Jawaban
+      currentQuiz.options.forEach((option, index) => {
+        const button = document.createElement("button");
+        button.innerText = option;
+        button.classList.add("option-btn");
+        button.onclick = () => selectOption(index);
+        optionsContainerEl.appendChild(button);
+      });
+    }
+
+    function selectOption(selectedIndex) {
+      const currentQuiz = quizData[currentQuestionIndex];
+      const buttons = optionsContainerEl.querySelectorAll(".option-btn");
+
+      // Cek kebenaran jawaban
+      if (selectedIndex === currentQuiz.answer) {
+        buttons[selectedIndex].classList.add("correct");
+        score++;
+        scoreLiveEl.innerText = `Skor: ${score}`;
+      } else {
+        buttons[selectedIndex].classList.add("incorrect");
+        // Tunjukkan jawaban yang benar
+        buttons[currentQuiz.answer].classList.add("correct");
+      }
+
+      // Nonaktifkan seluruh tombol setelah memilih
+      buttons.forEach(button => button.disabled = true);
+
+      // Aktifkan tombol selanjutnya
+      nextBtnEl.disabled = false;
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < quizData.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById("quiz-screen").style.display = "none";
+      document.getElementById("result-screen").style.display = "block";
+
+      const finalScoreEl = document.getElementById("final-score");
+      const feedbackTextEl = document.getElementById("feedback-text");
+
+      finalScoreEl.innerText = `${score}/${quizData.length}`;
+
+      // Memberikan feedback berdasarkan skor
+      const percentage = (score / quizData.length) * 100;
+      if (percentage === 100) {
+        feedbackTextEl.innerText = "Sempurna! Anda sangat memahami teknologi dan AI!";
+      } else if (percentage >= 70) {
+        feedbackTextEl.innerText = "Luar biasa! Pengetahuan Anda tentang AI sangat baik.";
+      } else if (percentage >= 50) {
+        feedbackTextEl.innerText = "Cukup baik! Tingkatkan lagi pengetahuan teknologi Anda.";
+      } else {
+        feedbackTextEl.innerText = "Jangan berkecil hati, mari belajar dan coba lagi!";
+      }
+    }
+
+    function restartQuiz() {
+      currentQuestionIndex = 0;
+      score = 0;
+      document.getElementById("quiz-screen").style.display = "block";
+      document.getElementById("result-screen").style.display = "none";
+      loadQuestion();
+    }
+
+    // Jalankan Kuis Pertama Kali
+    loadQuestion();
+  </script>
+
+</body>
+</html>
